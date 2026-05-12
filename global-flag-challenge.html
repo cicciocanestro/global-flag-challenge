@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Global Flag Challenge</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f172a;
+    --bg2: #0d1526;
+    --surface: rgba(15, 30, 60, 0.7);
+    --surface2: rgba(20, 40, 80, 0.5);
+    --neon-cyan: #00f5ff;
+    --neon-magenta: #ff00e5;
+    --neon-green: #00ff88;
+    --neon-red: #ff2d55;
+    --neon-gold: #ffd700;
+    --text: #e2e8f0;
+    --text-dim: #64748b;
+    --border: rgba(0, 245, 255, 0.15);
+    --border-hover: rgba(0, 245, 255, 0.5);
+    --glow-cyan: 0 0 20px rgba(0,245,255,0.4), 0 0 60px rgba(0,245,255,0.15);
+    --glow-magenta: 0 0 20px rgba(255,0,229,0.4), 0 0 60px rgba(255,0,229,0.15);
+    --glow-green: 0 0 20px rgba(0,255,136,0.5), 0 0 40px rgba(0,255,136,0.2);
+    --glow-red: 0 0 20px rgba(255,45,85,0.5), 0 0 40px rgba(255,45,85,0.2);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Exo 2', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,245,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,245,255,0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at 20% 20%, rgba(0,245,255,0.05) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(255,0,229,0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page { position: relative; z-index: 1; }
+
+  /* ===== SPLASH SCREEN ===== */
+  #splash {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+  }
+
+  .logo-area {
+    margin-bottom: 3rem;
+    animation: float 4s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+
+  .logo-icon {
+    font-size: 5rem;
+    display: block;
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 0 20px rgba(0,245,255,0.6));
+  }
+
+  .logo-title {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(1.8rem, 5vw, 3.5rem);
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-magenta));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+    line-height: 1.1;
+  }
+
+  .logo-sub {
+    font-size: 1rem;
+    color: var(--text-dim);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-top: 0.5rem;
+    font-weight: 300;
+  }
+
+  .difficulty-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.4em;
+    color: var(--neon-cyan);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+
+  .difficulty-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    max-width: 680px;
+    width: 100%;
+    margin-bottom: 3rem;
+  }
+
+  .diff-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.8rem 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .diff-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent, rgba(0,245,255,0.05));
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .diff-card:hover::before { opacity: 1; }
+
+  .diff-card:hover {
+    border-color: var(--border-hover);
+    box-shadow: var(--glow-cyan);
+    transform: translateY(-4px);
+  }
+
+  .diff-card.easy:hover { border-color: var(--neon-green); box-shadow: var(--glow-green); }
+  .diff-card.medium:hover { border-color: var(--neon-cyan); box-shadow: var(--glow-cyan); }
+  .diff-card.hard:hover { border-color: var(--neon-magenta); box-shadow: var(--glow-magenta); }
+
+  .diff-icon { font-size: 2.2rem; margin-bottom: 0.6rem; display: block; }
+
+  .diff-name {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+  }
+  .diff-card.easy .diff-name { color: var(--neon-green); }
+  .diff-card.medium .diff-name { color: var(--neon-cyan); }
+  .diff-card.hard .diff-name { color: var(--neon-magenta); }
+
+  .diff-detail {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  .diff-multiplier {
+    display: inline-block;
+    margin-top: 0.7rem;
+    padding: 0.2rem 0.7rem;
+    border-radius: 20px;
+    font-family: 'Orbitron', monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+  .diff-card.easy .diff-multiplier { background: rgba(0,255,136,0.15); color: var(--neon-green); border: 1px solid rgba(0,255,136,0.3); }
+  .diff-card.medium .diff-multiplier { background: rgba(0,245,255,0.15); color: var(--neon-cyan); border: 1px solid rgba(0,245,255,0.3); }
+  .diff-card.hard .diff-multiplier { background: rgba(255,0,229,0.15); color: var(--neon-magenta); border: 1px solid rgba(255,0,229,0.3); }
+
+  .stats-bar {
+    display: flex;
+    gap: 2rem;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+  }
+  .stats-bar span { display: flex; align-items: center; gap: 0.4rem; }
+
+  /* ===== GAME SCREEN ===== */
+  #game { display: none; }
+
+  .hud {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(15, 23, 42, 0.9);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0.8rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .hud-brand {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-magenta));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 0.1em;
+  }
+
+  .hud-stats {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .hud-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+  }
+
+  .hud-stat-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .hud-stat-value {
+    font-family: 'Orbitron', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--neon-cyan);
+  }
+
+  #hud-score { color: var(--neon-green); }
+  #hud-timer { color: var(--neon-gold); }
+
+  .progress-bar-wrap {
+    width: 100%;
+    height: 3px;
+    background: rgba(255,255,255,0.05);
+    position: relative;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta));
+    transition: width 0.4s ease;
+    box-shadow: 0 0 10px var(--neon-cyan);
+  }
+
+  /* Cards area */
+  .cards-area {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  .question-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    backdrop-filter: blur(12px);
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: cardIn 0.4s ease forwards;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .question-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,245,255,0.3), transparent);
+  }
+
+  @keyframes cardIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .question-card.answered-correct {
+    border-color: rgba(0,255,136,0.3);
+    box-shadow: 0 0 20px rgba(0,255,136,0.08);
+  }
+
+  .question-card.answered-wrong {
+    border-color: rgba(255,45,85,0.3);
+    box-shadow: 0 0 20px rgba(255,45,85,0.08);
+  }
+
+  .flag-side {
+    flex-shrink: 0;
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .card-num-badge {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--neon-cyan);
+    letter-spacing: 0.05em;
+    padding: 0.1rem 0;
+  }
+
+  .flag-emoji-wrap {
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 4/3;
+    cursor: default;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+  }
+
+  .flag-emoji-wrap:hover {
+    transform: scale(1.08);
+    box-shadow: var(--glow-cyan);
+  }
+
+  .flag-emoji {
+    font-size: 11rem;
+    line-height: 1;
+    display: block;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4));
+    transition: transform 0.3s ease;
+    user-select: none;
+  }
+
+  .flag-emoji-wrap:hover .flag-emoji {
+    transform: scale(1.1);
+  }
+
+  .options-side {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .options-grid {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .options-grid.cols-1 { grid-template-columns: 1fr; }
+  .options-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .options-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+  .opt-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.6rem 0.8rem;
+    color: var(--text);
+    font-family: 'Exo 2', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    line-height: 1.3;
+    word-break: break-word;
+  }
+
+  .opt-btn:hover:not(:disabled) {
+    background: rgba(0,245,255,0.08);
+    border-color: var(--neon-cyan);
+    color: var(--neon-cyan);
+    transform: translateX(2px);
+  }
+
+  .opt-btn:disabled { cursor: default; }
+
+  .opt-btn.correct {
+    background: rgba(0,255,136,0.15);
+    border-color: var(--neon-green);
+    color: var(--neon-green);
+    box-shadow: var(--glow-green);
+    font-weight: 700;
+  }
+
+  .opt-btn.wrong {
+    background: rgba(255,45,85,0.15);
+    border-color: var(--neon-red);
+    color: var(--neon-red);
+    box-shadow: var(--glow-red);
+  }
+
+  /* ===== RESULT SCREEN ===== */
+  #result { display: none; }
+
+  .result-wrap {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+    text-align: center;
+  }
+
+  .result-trophy {
+    font-size: 5rem;
+    margin-bottom: 1rem;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 15px rgba(255,215,0,0.5)); }
+    50% { transform: scale(1.08); filter: drop-shadow(0 0 30px rgba(255,215,0,0.8)); }
+  }
+
+  .result-title {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--neon-gold), var(--neon-cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+
+  .result-rating-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.4em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+  }
+
+  .result-rating {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 900;
+    color: var(--neon-gold);
+    text-shadow: 0 0 40px rgba(255,215,0,0.5);
+    margin-bottom: 2rem;
+    line-height: 1;
+  }
+
+  .result-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 1rem;
+    max-width: 600px;
+    width: 100%;
+    margin-bottom: 2.5rem;
+  }
+
+  .result-stat-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.2rem 1rem;
+    backdrop-filter: blur(10px);
+  }
+
+  .result-stat-box .val {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.8rem;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 0.3rem;
+  }
+
+  .result-stat-box .lbl {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .result-grade {
+    font-size: 1rem;
+    color: var(--text-dim);
+    margin-bottom: 2rem;
+    max-width: 400px;
+    line-height: 1.6;
+  }
+
+  .play-again-btn {
+    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-magenta));
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 3rem;
+    color: var(--bg);
+    font-family: 'Orbitron', monospace;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+  }
+
+  .play-again-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(0,245,255,0.4), 0 0 60px rgba(255,0,229,0.2);
+  }
+
+  /* ===== RECORD BOX (splash) ===== */
+  .record-box {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--surface);
+    border: 1px solid rgba(255,215,0,0.25);
+    border-radius: 14px;
+    padding: 0.9rem 1.4rem;
+    max-width: 420px;
+    width: 100%;
+    margin-bottom: 2rem;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 20px rgba(255,215,0,0.06);
+  }
+
+  .record-trophy-icon { font-size: 1.8rem; flex-shrink: 0; }
+
+  .record-info { flex: 1; text-align: left; }
+
+  .record-label {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    color: var(--neon-gold);
+    text-transform: uppercase;
+    margin-bottom: 0.2rem;
+  }
+
+  .record-player {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .record-score {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: var(--neon-gold);
+    text-shadow: 0 0 15px rgba(255,215,0,0.4);
+  }
+
+  .record-meta {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    margin-top: 0.1rem;
+  }
+
+  /* ===== PLAYER INPUT SCREEN ===== */
+  #player-screen {
+    min-height: 100vh;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+  }
+
+  .player-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2.5rem 2rem;
+    max-width: 420px;
+    width: 100%;
+    backdrop-filter: blur(12px);
+    box-shadow: var(--glow-cyan);
+  }
+
+  .player-card-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--neon-cyan);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+
+  .player-card-sub {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    margin-bottom: 1.8rem;
+  }
+
+  .player-input {
+    width: 100%;
+    background: rgba(0,245,255,0.05);
+    border: 1px solid var(--border-hover);
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    color: var(--text);
+    font-family: 'Exo 2', sans-serif;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    margin-bottom: 1rem;
+  }
+
+  .player-input:focus {
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 0 3px rgba(0,245,255,0.12);
+  }
+
+  .player-input::placeholder { color: var(--text-dim); }
+
+  .saved-players-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+    text-align: left;
+  }
+
+  .saved-players-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    min-height: 0;
+  }
+
+  .saved-player-chip {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 0.3rem 0.9rem;
+    font-size: 0.82rem;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .saved-player-chip:hover {
+    border-color: var(--neon-cyan);
+    color: var(--neon-cyan);
+    background: rgba(0,245,255,0.08);
+  }
+
+  .player-confirm-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-magenta));
+    border: none;
+    border-radius: 10px;
+    padding: 0.9rem;
+    color: var(--bg);
+    font-family: 'Orbitron', monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .player-confirm-btn:hover {
+    transform: scale(1.02);
+    box-shadow: var(--glow-cyan);
+  }
+
+  .player-back-btn {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    cursor: pointer;
+    margin-top: 1rem;
+    text-decoration: underline;
+    font-family: 'Exo 2', sans-serif;
+  }
+
+  .player-back-btn:hover { color: var(--text); }
+
+  /* ===== NEW RECORD BANNER (result) ===== */
+  .new-record-banner {
+    display: none;
+    background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,165,0,0.08));
+    border: 1px solid rgba(255,215,0,0.4);
+    border-radius: 14px;
+    padding: 0.9rem 1.5rem;
+    margin-bottom: 1.5rem;
+    font-family: 'Orbitron', monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--neon-gold);
+    letter-spacing: 0.1em;
+    text-shadow: 0 0 10px rgba(255,215,0,0.4);
+    animation: glowPulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes glowPulse {
+    0%, 100% { box-shadow: 0 0 10px rgba(255,215,0,0.2); }
+    50% { box-shadow: 0 0 25px rgba(255,215,0,0.5); }
+  }
+
+  .prev-record-info {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    margin-bottom: 1.5rem;
+  }
+
+  /* ===== RESPONSIVE MOBILE ===== */
+  @media (max-width: 640px) {
+
+    /* -- Splash -- */
+    .logo-icon { font-size: 3.5rem; }
+    .logo-sub { font-size: 0.8rem; letter-spacing: 0.15em; }
+    .difficulty-grid { grid-template-columns: 1fr; gap: 0.7rem; }
+    .diff-card {
+      padding: 1rem 1.2rem;
+      display: flex; flex-direction: row;
+      align-items: center; gap: 1rem; text-align: left;
+    }
+    .diff-icon { font-size: 1.8rem; flex-shrink: 0; margin-bottom: 0; }
+    .diff-detail { font-size: 0.72rem; }
+    .stats-bar { gap: 1rem; font-size: 0.72rem; flex-wrap: wrap; justify-content: center; }
+
+    /* -- HUD -- */
+    .hud { padding: 0.6rem 1rem; gap: 0.5rem; }
+    .hud-brand { font-size: 0.7rem; }
+    .hud-stats { gap: 0.8rem; }
+    .hud-stat-label { font-size: 0.55rem; }
+    .hud-stat-value { font-size: 0.85rem; }
+
+    /* -- Cards: layout verticale puro -- */
+    .cards-area { padding: 0.75rem 0.75rem 3rem; }
+
+    .question-card {
+      flex-direction: column;
+      padding: 1rem;
+      gap: 0.9rem;
+      border-radius: 14px;
+      margin-bottom: 0.9rem;
+      align-items: stretch;
+    }
+
+    /* Flag-side: numero + bandiera centrati in colonna */
+    .flag-side {
+      width: 100%;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card-num-badge {
+      font-size: 0.7rem;
+      text-align: center;
+    }
+
+    .flag-emoji-wrap {
+      width: 100%;
+      aspect-ratio: 16/9;
+      border-radius: 10px;
+    }
+
+    .flag-emoji { font-size: 4.5rem; }
+
+    /* Options: sempre 2 colonne, full width */
+    .options-side { width: 100%; }
+
+    .options-grid { gap: 0.45rem; }
+    .options-grid.cols-1 { grid-template-columns: 1fr; }
+    .options-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+    .options-grid.cols-3 { grid-template-columns: 1fr 1fr; }
+
+    .opt-btn {
+      padding: 0.75rem 0.4rem;
+      font-size: 0.78rem;
+      text-align: center;
+      border-radius: 10px;
+      min-height: 48px;
+      line-height: 1.2;
+    }
+
+    .opt-btn:hover:not(:disabled) { transform: none; }
+
+    /* -- Result -- */
+    .result-wrap { padding: 2rem 1rem; }
+    .result-trophy { font-size: 3.5rem; }
+    .result-rating { font-size: 3.5rem; }
+    .result-stats-grid { grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+    .result-stat-box { padding: 0.9rem 0.7rem; }
+    .result-stat-box .val { font-size: 1.4rem; }
+    .play-again-btn { padding: 0.9rem 2rem; font-size: 0.8rem; width: 100%; }
+    .new-record-banner { font-size: 0.75rem; padding: 0.75rem 1rem; }
+    .prev-record-info { font-size: 0.72rem; }
+
+    /* -- Player screen -- */
+    #player-screen { padding: 1.5rem 1rem; }
+    .player-card { padding: 1.8rem 1.2rem; border-radius: 16px; }
+    .player-card-title { font-size: 0.85rem; }
+    .player-input { font-size: 0.95rem; padding: 0.75rem 0.9rem; }
+    .saved-player-chip { font-size: 0.78rem; padding: 0.25rem 0.75rem; }
+    .player-confirm-btn { font-size: 0.78rem; padding: 0.85rem; }
+
+    /* -- Record box (splash) -- */
+    .record-box { padding: 0.75rem 1rem; gap: 0.75rem; }
+    .record-trophy-icon { font-size: 1.4rem; }
+    .record-player { font-size: 0.85rem; }
+    .record-score { font-size: 1.2rem; }
+    .record-meta { font-size: 0.65rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== SPLASH ===== -->
+<div id="splash" class="page">
+  <div class="logo-area">
+    <span class="logo-icon">🌍</span>
+    <div class="logo-title">Global Flag<br>Challenge</div>
+    <div class="logo-sub">Conosci le bandiere del mondo?</div>
+  </div>
+
+  <div id="splash-record" class="record-box" style="display:none">
+    <div class="record-trophy-icon">🏆</div>
+    <div class="record-info">
+      <div class="record-label">Record assoluto</div>
+      <div class="record-player" id="splash-record-player">—</div>
+      <div class="record-meta" id="splash-record-meta"></div>
+    </div>
+    <div class="record-score" id="splash-record-score">0</div>
+  </div>
+
+  <div class="difficulty-title">— Scegli la difficoltà —</div>
+
+  <div class="difficulty-grid">
+    <div class="diff-card easy" onclick="goToPlayer('easy')">
+      <span class="diff-icon">🟢</span>
+      <div class="diff-name">Facile</div>
+      <div class="diff-detail">4 opzioni<br>1 colonna</div>
+      <span class="diff-multiplier">×1</span>
+    </div>
+    <div class="diff-card medium" onclick="goToPlayer('medium')">
+      <span class="diff-icon">🔵</span>
+      <div class="diff-name">Medio</div>
+      <div class="diff-detail">8 opzioni<br>2 colonne</div>
+      <span class="diff-multiplier">×2</span>
+    </div>
+    <div class="diff-card hard" onclick="goToPlayer('hard')">
+      <span class="diff-icon">🔴</span>
+      <div class="diff-name">Difficile</div>
+      <div class="diff-detail">12 opzioni<br>3 colonne</div>
+      <span class="diff-multiplier">×3</span>
+    </div>
+  </div>
+
+  <div class="stats-bar">
+    <span>🎌 50 domande</span>
+    <span>🌐 100+ nazioni</span>
+    <span>⏱️ Contro il tempo</span>
+  </div>
+</div>
+
+<!-- ===== PLAYER INPUT ===== -->
+<div id="player-screen" class="page">
+  <div class="player-card">
+    <div class="player-card-title">👤 Chi gioca?</div>
+    <div class="player-card-sub">Inserisci il tuo nome per salvare il punteggio</div>
+    <input id="player-name-input" class="player-input" type="text" maxlength="24"
+      placeholder="Il tuo nome..." oninput="onPlayerInput()" onkeydown="if(event.key==='Enter')confirmPlayer()">
+    <div id="saved-players-wrap" style="display:none">
+      <div class="saved-players-label">Giocatori salvati</div>
+      <div class="saved-players-list" id="saved-players-list"></div>
+    </div>
+    <button class="player-confirm-btn" id="player-confirm-btn" onclick="confirmPlayer()">Inizia partita →</button>
+    <button class="player-back-btn" onclick="backToSplash()">← Torna indietro</button>
+  </div>
+</div>
+
+<!-- ===== GAME ===== -->
+<div id="game" class="page">
+  <div class="hud">
+    <div class="hud-brand">🌍 Flag Challenge</div>
+    <div class="hud-stats">
+      <div class="hud-stat">
+        <span class="hud-stat-label">Domanda</span>
+        <span class="hud-stat-value" id="hud-q">0/50</span>
+      </div>
+      <div class="hud-stat">
+        <span class="hud-stat-label">Punteggio</span>
+        <span class="hud-stat-value" id="hud-score">0</span>
+      </div>
+      <div class="hud-stat">
+        <span class="hud-stat-label">Tempo</span>
+        <span class="hud-stat-value" id="hud-timer">0s</span>
+      </div>
+      <div class="hud-stat">
+        <span class="hud-stat-label">Diff</span>
+        <span class="hud-stat-value" id="hud-diff">—</span>
+      </div>
+    </div>
+    <div style="width:100%;height:0;flex-basis:100%"></div>
+    <div class="progress-bar-wrap" style="width:100%">
+      <div class="progress-bar-fill" id="prog-bar" style="width:0%"></div>
+    </div>
+  </div>
+  <div class="cards-area" id="cards-area"></div>
+</div>
+
+<!-- ===== RESULT ===== -->
+<div id="result" class="page">
+  <div class="result-wrap">
+    <div class="result-trophy" id="res-trophy">🏆</div>
+    <div class="result-title" id="res-title">Sfida Completata!</div>
+    <div class="new-record-banner" id="new-record-banner">🏆 NUOVO RECORD ASSOLUTO!</div>
+    <div class="result-rating-label">Rating Finale — <span id="res-player-name" style="color:var(--neon-cyan)"></span></div>
+    <div class="result-rating" id="res-rating">0</div>
+    <div class="prev-record-info" id="prev-record-info"></div>
+    <div class="result-stats-grid">
+      <div class="result-stat-box">
+        <span class="val" id="res-correct" style="color:var(--neon-green)">0</span>
+        <span class="lbl">Corrette</span>
+      </div>
+      <div class="result-stat-box">
+        <span class="val" id="res-wrong" style="color:var(--neon-red)">0</span>
+        <span class="lbl">Errate</span>
+      </div>
+      <div class="result-stat-box">
+        <span class="val" id="res-time" style="color:var(--neon-gold)">0s</span>
+        <span class="lbl">Tempo</span>
+      </div>
+      <div class="result-stat-box">
+        <span class="val" id="res-mult" style="color:var(--neon-cyan)">×1</span>
+        <span class="lbl">Moltiplicatore</span>
+      </div>
+    </div>
+    <div class="result-grade" id="res-grade"></div>
+    <button class="play-again-btn" onclick="goHome()">↩ Gioca ancora</button>
+  </div>
+</div>
+
+<script>
+// ===== DATABASE =====
+const COUNTRIES = [
+  { name: "Afghanistan", code: "af" },
+  { name: "Albania", code: "al" },
+  { name: "Algeria", code: "dz" },
+  { name: "Andorra", code: "ad" },
+  { name: "Angola", code: "ao" },
+  { name: "Argentina", code: "ar" },
+  { name: "Armenia", code: "am" },
+  { name: "Australia", code: "au" },
+  { name: "Austria", code: "at" },
+  { name: "Azerbaigian", code: "az" },
+  { name: "Bahamas", code: "bs" },
+  { name: "Bahrain", code: "bh" },
+  { name: "Bangladesh", code: "bd" },
+  { name: "Belgio", code: "be" },
+  { name: "Belize", code: "bz" },
+  { name: "Benin", code: "bj" },
+  { name: "Bhutan", code: "bt" },
+  { name: "Bolivia", code: "bo" },
+  { name: "Bosnia ed Erzegovina", code: "ba" },
+  { name: "Botswana", code: "bw" },
+  { name: "Brasile", code: "br" },
+  { name: "Brunei", code: "bn" },
+  { name: "Bulgaria", code: "bg" },
+  { name: "Burkina Faso", code: "bf" },
+  { name: "Burundi", code: "bi" },
+  { name: "Cambogia", code: "kh" },
+  { name: "Camerun", code: "cm" },
+  { name: "Canada", code: "ca" },
+  { name: "Capo Verde", code: "cv" },
+  { name: "Cile", code: "cl" },
+  { name: "Cina", code: "cn" },
+  { name: "Cipro", code: "cy" },
+  { name: "Colombia", code: "co" },
+  { name: "Comore", code: "km" },
+  { name: "Corea del Nord", code: "kp" },
+  { name: "Corea del Sud", code: "kr" },
+  { name: "Costa Rica", code: "cr" },
+  { name: "Costa d\u0027Avorio", code: "ci" },
+  { name: "Croazia", code: "hr" },
+  { name: "Cuba", code: "cu" },
+  { name: "Danimarca", code: "dk" },
+  { name: "Ecuador", code: "ec" },
+  { name: "Egitto", code: "eg" },
+  { name: "El Salvador", code: "sv" },
+  { name: "Emirati Arabi Uniti", code: "ae" },
+  { name: "Eritrea", code: "er" },
+  { name: "Estonia", code: "ee" },
+  { name: "Etiopia", code: "et" },
+  { name: "Figi", code: "fj" },
+  { name: "Filippine", code: "ph" },
+  { name: "Finlandia", code: "fi" },
+  { name: "Francia", code: "fr" },
+  { name: "Gabon", code: "ga" },
+  { name: "Gambia", code: "gm" },
+  { name: "Georgia", code: "ge" },
+  { name: "Germania", code: "de" },
+  { name: "Ghana", code: "gh" },
+  { name: "Giamaica", code: "jm" },
+  { name: "Giappone", code: "jp" },
+  { name: "Giordania", code: "jo" },
+  { name: "Grecia", code: "gr" },
+  { name: "Guatemala", code: "gt" },
+  { name: "Guinea", code: "gn" },
+  { name: "Guinea Bissau", code: "gw" },
+  { name: "Guinea Equatoriale", code: "gq" },
+  { name: "Haiti", code: "ht" },
+  { name: "Honduras", code: "hn" },
+  { name: "India", code: "in" },
+  { name: "Indonesia", code: "id" },
+  { name: "Iran", code: "ir" },
+  { name: "Iraq", code: "iq" },
+  { name: "Irlanda", code: "ie" },
+  { name: "Islanda", code: "is" },
+  { name: "Israele", code: "il" },
+  { name: "Italia", code: "it" },
+  { name: "Kazakhstan", code: "kz" },
+  { name: "Kenya", code: "ke" },
+  { name: "Kuwait", code: "kw" },
+  { name: "Laos", code: "la" },
+  { name: "Lesotho", code: "ls" },
+  { name: "Lettonia", code: "lv" },
+  { name: "Libano", code: "lb" },
+  { name: "Liberia", code: "lr" },
+  { name: "Libia", code: "ly" },
+  { name: "Lituania", code: "lt" },
+  { name: "Lussemburgo", code: "lu" },
+  { name: "Madagascar", code: "mg" },
+  { name: "Malawi", code: "mw" },
+  { name: "Malaysia", code: "my" },
+  { name: "Mali", code: "ml" },
+  { name: "Malta", code: "mt" },
+  { name: "Marocco", code: "ma" },
+  { name: "Mauritania", code: "mr" },
+  { name: "Messico", code: "mx" },
+  { name: "Moldova", code: "md" },
+  { name: "Mongolia", code: "mn" },
+  { name: "Montenegro", code: "me" },
+  { name: "Mozambico", code: "mz" },
+  { name: "Myanmar", code: "mm" },
+  { name: "Namibia", code: "na" },
+  { name: "Nepal", code: "np" },
+  { name: "Nicaragua", code: "ni" },
+  { name: "Niger", code: "ne" },
+  { name: "Nigeria", code: "ng" },
+  { name: "Norvegia", code: "no" },
+  { name: "Nuova Zelanda", code: "nz" },
+  { name: "Oman", code: "om" },
+  { name: "Pakistan", code: "pk" },
+  { name: "Panama", code: "pa" },
+  { name: "Papua Nuova Guinea", code: "pg" },
+  { name: "Paraguay", code: "py" },
+  { name: "Perù", code: "pe" },
+  { name: "Polonia", code: "pl" },
+  { name: "Portogallo", code: "pt" },
+  { name: "Qatar", code: "qa" },
+  { name: "Regno Unito", code: "gb" },
+  { name: "Repubblica Ceca", code: "cz" },
+  { name: "Repubblica Dominicana", code: "do" },
+  { name: "Romania", code: "ro" },
+  { name: "Ruanda", code: "rw" },
+  { name: "Russia", code: "ru" },
+  { name: "Senegal", code: "sn" },
+  { name: "Serbia", code: "rs" },
+  { name: "Sierra Leone", code: "sl" },
+  { name: "Singapore", code: "sg" },
+  { name: "Siria", code: "sy" },
+  { name: "Slovenia", code: "si" },
+  { name: "Somalia", code: "so" },
+  { name: "Spagna", code: "es" },
+  { name: "Sri Lanka", code: "lk" },
+  { name: "Sudan", code: "sd" },
+  { name: "Svezia", code: "se" },
+  { name: "Svizzera", code: "ch" },
+  { name: "Tanzania", code: "tz" },
+  { name: "Thailandia", code: "th" },
+  { name: "Togo", code: "tg" },
+  { name: "Tunisia", code: "tn" },
+  { name: "Turchia", code: "tr" },
+  { name: "Uganda", code: "ug" },
+  { name: "Ungheria", code: "hu" },
+  { name: "Uruguay", code: "uy" },
+  { name: "USA", code: "us" },
+  { name: "Uzbekistan", code: "uz" },
+  { name: "Venezuela", code: "ve" },
+  { name: "Vietnam", code: "vn" },
+  { name: "Yemen", code: "ye" },
+  { name: "Zambia", code: "zm" },
+  { name: "Zimbabwe", code: "zw" }
+];
+
+// ===== STATE =====
+let difficulty = 'easy';
+let pendingDiff = 'easy';
+let currentPlayer = '';
+let questions = [];
+let score = 0;
+let answered = 0;
+let timerSec = 0;
+let timerInterval = null;
+let correct = 0;
+let wrong = 0;
+
+const DIFF = {
+  easy:   { opts: 4,  cols: 'cols-1', mult: 1  },
+  medium: { opts: 8,  cols: 'cols-2', mult: 2  },
+  hard:   { opts: 12, cols: 'cols-3', mult: 3  }
+};
+
+// ===== LOCALSTORAGE HELPERS =====
+function getRecord() {
+  try { return JSON.parse(localStorage.getItem('flagchallenge_record')) || null; }
+  catch { return null; }
+}
+
+function saveRecord(player, rating, diff, time) {
+  const rec = { player, rating, diff, time, date: new Date().toLocaleDateString('it-IT') };
+  localStorage.setItem('flagchallenge_record', JSON.stringify(rec));
+}
+
+function getPlayers() {
+  try { return JSON.parse(localStorage.getItem('flagchallenge_players')) || []; }
+  catch { return []; }
+}
+
+function savePlayer(name) {
+  const players = getPlayers();
+  if (!players.includes(name)) {
+    players.unshift(name);
+    if (players.length > 10) players.pop();
+    localStorage.setItem('flagchallenge_players', JSON.stringify(players));
+  }
+}
+
+// ===== SPLASH RECORD =====
+function renderSplashRecord() {
+  const rec = getRecord();
+  const box = document.getElementById('splash-record');
+  if (!rec) { box.style.display = 'none'; return; }
+  box.style.display = 'flex';
+  document.getElementById('splash-record-player').textContent = rec.player;
+  document.getElementById('splash-record-score').textContent = rec.rating;
+  const diffLabel = rec.diff === 'easy' ? 'Facile' : rec.diff === 'medium' ? 'Medio' : 'Difficile';
+  document.getElementById('splash-record-meta').textContent = `${diffLabel} · ${rec.time}s · ${rec.date}`;
+}
+
+// ===== PLAYER SCREEN =====
+function goToPlayer(diff) {
+  pendingDiff = diff;
+  document.getElementById('splash').style.display = 'none';
+  document.getElementById('player-screen').style.display = 'flex';
+  const input = document.getElementById('player-name-input');
+  input.value = '';
+  renderSavedPlayers();
+  setTimeout(() => input.focus(), 100);
+}
+
+function renderSavedPlayers() {
+  const players = getPlayers();
+  const wrap = document.getElementById('saved-players-wrap');
+  const list = document.getElementById('saved-players-list');
+  if (players.length === 0) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  list.innerHTML = players.map(p =>
+    `<div class="saved-player-chip" onclick="selectPlayer('${p.replace(/'/g, "\\'")}')">${p}</div>`
+  ).join('');
+}
+
+function selectPlayer(name) {
+  document.getElementById('player-name-input').value = name;
+}
+
+function onPlayerInput() {
+  // nothing extra needed, just real-time
+}
+
+function confirmPlayer() {
+  const name = document.getElementById('player-name-input').value.trim();
+  if (!name) {
+    document.getElementById('player-name-input').focus();
+    document.getElementById('player-name-input').style.borderColor = 'var(--neon-red)';
+    setTimeout(() => document.getElementById('player-name-input').style.borderColor = '', 1000);
+    return;
+  }
+  currentPlayer = name;
+  savePlayer(name);
+  document.getElementById('player-screen').style.display = 'none';
+  startGame(pendingDiff);
+}
+
+function backToSplash() {
+  document.getElementById('player-screen').style.display = 'none';
+  document.getElementById('splash').style.display = 'flex';
+}
+
+// ===== GAME =====
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startGame(diff) {
+  difficulty = diff;
+  score = 0; answered = 0; timerSec = 0; correct = 0; wrong = 0;
+
+  const shuffled = shuffle(COUNTRIES);
+  questions = shuffled.slice(0, 50);
+
+  document.getElementById('splash').style.display = 'none';
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('game').style.display = 'block';
+  document.getElementById('cards-area').innerHTML = '';
+
+  updateHUD();
+  document.getElementById('hud-diff').textContent =
+    diff === 'easy' ? '🟢 ×1' : diff === 'medium' ? '🔵 ×2' : '🔴 ×3';
+
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timerSec++;
+    document.getElementById('hud-timer').textContent = timerSec + 's';
+  }, 1000);
+
+  questions.forEach((q, i) => renderCard(q, i));
+}
+
+function codeToEmoji(code) {
+  return code.toUpperCase().split('').map(c =>
+    String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65)
+  ).join('');
+}
+
+function renderCard(q, index) {
+  const cfg = DIFF[difficulty];
+  const poolMinusCorrect = COUNTRIES.filter(c => c.code !== q.code);
+  const distractors = shuffle(poolMinusCorrect).slice(0, cfg.opts - 1);
+  const options = shuffle([q, ...distractors]);
+
+  const card = document.createElement('div');
+  card.className = 'question-card';
+  card.id = 'card-' + index;
+  card.style.animationDelay = Math.min(index * 0.04, 1.5) + 's';
+
+  const flagEmoji = codeToEmoji(q.code);
+
+  const optBtns = options.map(opt => {
+    const safeName = opt.name.replace(/&/g, '&amp;');
+    return `<button class="opt-btn" onclick="handleAnswer(${index}, '${q.code}', '${opt.code}')">${safeName}</button>`;
+  }).join('');
+
+  const numLabel = String(index + 1).padStart(2, '0');
+
+  card.innerHTML = `
+    <div class="flag-side">
+      <div class="card-num-badge">${numLabel}<span style="opacity:0.4">/50</span></div>
+      <div class="flag-emoji-wrap">
+        <span class="flag-emoji">${flagEmoji}</span>
+      </div>
+    </div>
+    <div class="options-side">
+      <div class="options-grid ${cfg.cols}">
+        ${optBtns}
+      </div>
+    </div>
+  `;
+
+  document.getElementById('cards-area').appendChild(card);
+}
+
+function handleAnswer(index, correctCode, chosenCode) {
+  const card = document.getElementById('card-' + index);
+  const btns = card.querySelectorAll('.opt-btn');
+
+  btns.forEach(btn => { btn.disabled = true; });
+
+  const isCorrect = correctCode === chosenCode;
+  if (isCorrect) {
+    score++; correct++;
+    card.classList.add('answered-correct');
+  } else {
+    score--; wrong++;
+    card.classList.add('answered-wrong');
+  }
+
+  btns.forEach(btn => {
+    const countryObj = COUNTRIES.find(c => c.name === btn.textContent);
+    if (countryObj) {
+      if (countryObj.code === correctCode) btn.classList.add('correct');
+      else if (countryObj.code === chosenCode && !isCorrect) btn.classList.add('wrong');
+    }
+  });
+
+  answered++;
+  updateHUD();
+
+  if (answered === 50) {
+    clearInterval(timerInterval);
+    setTimeout(showResult, 600);
+  }
+}
+
+function updateHUD() {
+  document.getElementById('hud-q').textContent = answered + '/50';
+  document.getElementById('hud-score').textContent = (score >= 0 ? '+' : '') + score;
+  document.getElementById('prog-bar').style.width = (answered / 50 * 100) + '%';
+}
+
+function showResult() {
+  document.getElementById('game').style.display = 'none';
+  document.getElementById('result').style.display = 'block';
+
+  const mult = DIFF[difficulty].mult;
+  const raw = timerSec > 0
+    ? (correct * correct / 50) * mult * (1000 / timerSec) * 10
+    : 0;
+  const rating = Math.max(0, Math.round(raw));
+
+  // Check record
+  const prevRec = getRecord();
+  const isNewRecord = !prevRec || rating > prevRec.rating;
+
+  if (isNewRecord && rating > 0) {
+    saveRecord(currentPlayer, rating, difficulty, timerSec);
+  }
+
+  // Update UI
+  document.getElementById('res-rating').textContent = rating;
+  document.getElementById('res-player-name').textContent = currentPlayer;
+  document.getElementById('res-correct').textContent = correct;
+  document.getElementById('res-wrong').textContent = wrong;
+  document.getElementById('res-time').textContent = timerSec + 's';
+  document.getElementById('res-mult').textContent = '×' + mult;
+
+  const banner = document.getElementById('new-record-banner');
+  const prevInfo = document.getElementById('prev-record-info');
+  if (isNewRecord && rating > 0) {
+    banner.style.display = 'block';
+    prevInfo.textContent = prevRec
+      ? `Record precedente: ${prevRec.rating} di ${prevRec.player}`
+      : '';
+  } else {
+    banner.style.display = 'none';
+    if (prevRec) {
+      prevInfo.textContent = `🏆 Record attuale: ${prevRec.rating} di ${prevRec.player}`;
+    } else {
+      prevInfo.textContent = '';
+    }
+  }
+
+  const pct = correct / 50;
+  let trophy, title, grade;
+  if (pct >= 0.9) {
+    trophy = '🏆'; title = 'Leggenda delle Bandiere!';
+    grade = 'Straordinario! Conosci il mondo meglio di molti geografi professionisti.';
+  } else if (pct >= 0.75) {
+    trophy = '🥇'; title = 'Esperto Globale!';
+    grade = 'Ottimo risultato! Il tuo senso geopolitico è davvero impressionante.';
+  } else if (pct >= 0.55) {
+    trophy = '🥈'; title = 'Buona Prova!';
+    grade = 'Hai una buona base. Con un po\' di allenamento potresti raggiungere la vetta.';
+  } else if (pct >= 0.35) {
+    trophy = '🥉'; title = 'In Crescita';
+    grade = 'Non male per iniziare! Continua a esplorare e tornerai più forte.';
+  } else {
+    trophy = '🌍'; title = 'Esploratore Novizio';
+    grade = 'Il mondo è vasto e affascinante. Ogni quiz è un passo verso la conoscenza!';
+  }
+
+  document.getElementById('res-trophy').textContent = trophy;
+  document.getElementById('res-title').textContent = title;
+  document.getElementById('res-grade').textContent = grade;
+}
+
+function goHome() {
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('game').style.display = 'none';
+  document.getElementById('splash').style.display = 'flex';
+  renderSplashRecord();
+}
+
+// Init
+renderSplashRecord();
+</script>
+</body>
+</html>

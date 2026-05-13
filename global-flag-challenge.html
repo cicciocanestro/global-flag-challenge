@@ -975,7 +975,7 @@
   </div>
 </div>
 
-<script>
+<script type="module">
 // ===== DATABASE =====
 const COUNTRIES = [
   { name: "Afghanistan", code: "af" },
@@ -1192,17 +1192,56 @@ const DIFF = {
   hard:   { opts: 12, cols: 'cols-3', mult: 3  }
 };
 
-// ===== LOCALSTORAGE HELPERS =====
-function getRecord() {
-  try { return JSON.parse(localStorage.getItem('flagchallenge_record')) || null; }
-  catch { return null; }
+// ===== FIREBASE CONFIG =====
+// 1. Vai su https://console.firebase.google.com
+// 2. Crea un progetto → Aggiungi app Web → copia le credenziali qui sotto
+// 3. Vai su Firestore Database → Crea database → modalità test
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyAr7k5StBfiwzgtoMYVbB4plcA4LSoSrHM",
+  authDomain:        "global-flag-challenge.firebaseapp.com",
+  projectId:         "global-flag-challenge",
+  storageBucket:     "global-flag-challenge.firebasestorage.app",
+  messagingSenderId: "969752307669",
+  appId:             "1:969752307669:web:df369fbdae68c7b2f2bf5c"
+};
+
+// ===== FIREBASE INIT =====
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const _app = initializeApp(FIREBASE_CONFIG);
+const _db  = getFirestore(_app);
+const RECORD_DOC = doc(_db, "flagchallenge", "global_record");
+
+// ===== REMOTE RECORD =====
+let _cachedRecord = null; // cache locale per la sessione
+
+async function getRecord() {
+  // usa cache se già caricata
+  if (_cachedRecord !== undefined && _cachedRecord !== null) return _cachedRecord;
+  try {
+    const snap = await getDoc(RECORD_DOC);
+    _cachedRecord = snap.exists() ? snap.data() : null;
+    return _cachedRecord;
+  } catch (e) {
+    // fallback a localStorage se Firebase non raggiungibile
+    try { return JSON.parse(localStorage.getItem('flagchallenge_record')) || null; }
+    catch { return null; }
+  }
 }
 
-function saveRecord(player, rating, diff, time) {
+async function saveRecord(player, rating, diff, time) {
   const rec = { player, rating, diff, time, date: new Date().toLocaleDateString('it-IT') };
-  localStorage.setItem('flagchallenge_record', JSON.stringify(rec));
+  _cachedRecord = rec;
+  try {
+    await setDoc(RECORD_DOC, rec);
+  } catch (e) {
+    // fallback locale
+    localStorage.setItem('flagchallenge_record', JSON.stringify(rec));
+  }
 }
 
+// ===== LOCAL PLAYERS (rimane locale, è una preferenza personale) =====
 function getPlayers() {
   try { return JSON.parse(localStorage.getItem('flagchallenge_players')) || []; }
   catch { return []; }
@@ -1218,15 +1257,18 @@ function savePlayer(name) {
 }
 
 // ===== SPLASH RECORD =====
-function renderSplashRecord() {
-  const rec = getRecord();
+async function renderSplashRecord() {
   const box = document.getElementById('splash-record');
-  if (!rec) { box.style.display = 'none'; return; }
-  box.style.display = 'flex';
-  document.getElementById('splash-record-player').textContent = rec.player;
-  document.getElementById('splash-record-score').textContent = rec.rating;
-  const diffLabel = rec.diff === 'easy' ? 'Facile' : rec.diff === 'medium' ? 'Medio' : 'Difficile';
-  document.getElementById('splash-record-meta').textContent = `${diffLabel} · ${rec.time}s · ${rec.date}`;
+  box.style.display = 'none';
+  try {
+    const rec = await getRecord();
+    if (!rec) return;
+    box.style.display = 'flex';
+    document.getElementById('splash-record-player').textContent = rec.player;
+    document.getElementById('splash-record-score').textContent = rec.rating;
+    const diffLabel = rec.diff === 'easy' ? 'Facile' : rec.diff === 'medium' ? 'Medio' : 'Difficile';
+    document.getElementById('splash-record-meta').textContent = `${diffLabel} · ${rec.time}s · ${rec.date}`;
+  } catch(e) { /* silenzioso */ }
 }
 
 // ===== PLAYER SCREEN =====
@@ -1394,7 +1436,7 @@ function updateHUD() {
   document.getElementById('prog-bar').style.width = (answered / 50 * 100) + '%';
 }
 
-function showResult() {
+async function showResult() {
   document.getElementById('game').style.display = 'none';
   document.getElementById('result').style.display = 'block';
 
@@ -1404,12 +1446,12 @@ function showResult() {
     : 0;
   const rating = Math.max(0, Math.round(raw));
 
-  // Check record
-  const prevRec = getRecord();
+  // Check record (await Firebase)
+  const prevRec = await getRecord();
   const isNewRecord = !prevRec || rating > prevRec.rating;
 
   if (isNewRecord && rating > 0) {
-    saveRecord(currentPlayer, rating, difficulty, timerSec);
+    await saveRecord(currentPlayer, rating, difficulty, timerSec);
   }
 
   // Update UI
@@ -1460,15 +1502,25 @@ function showResult() {
   document.getElementById('res-grade').textContent = grade;
 }
 
-function goHome() {
+async function goHome() {
   document.getElementById('result').style.display = 'none';
   document.getElementById('game').style.display = 'none';
   document.getElementById('splash').style.display = 'flex';
-  renderSplashRecord();
+  _cachedRecord = null; // forza ricarica da Firebase
+  await renderSplashRecord();
 }
 
 // Init
 renderSplashRecord();
+
+// Esponi le funzioni al global scope (necessario con type="module")
+window.goToPlayer    = goToPlayer;
+window.confirmPlayer = confirmPlayer;
+window.backToSplash  = backToSplash;
+window.selectPlayer  = selectPlayer;
+window.onPlayerInput = onPlayerInput;
+window.handleAnswer  = handleAnswer;
+window.goHome        = goHome;
 </script>
 </body>
 </html>

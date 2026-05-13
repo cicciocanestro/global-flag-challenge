@@ -4,9 +4,22 @@ Un quiz interattivo sulle bandiere del mondo, completamente client-side, senza d
 
 ---
 
-## 🎮 Demo
+## 🎮 Demo live
 
-> Apri `global-flag-challenge.html` direttamente nel browser — nessuna installazione richiesta.
+👉 **[Gioca ora su GitHub Pages](https://cicciocanestro.github.io/global-flag-challenge/global-flag-challenge.html)**
+
+---
+
+## 📸 Screenshot
+
+### Schermata iniziale
+![Home](screenshots/home.png)
+
+### Gioco in corso
+![Game](screenshots/game.png)
+
+### Schermata risultati
+![Result](screenshots/result.png)
 
 ---
 
@@ -16,6 +29,7 @@ Un quiz interattivo sulle bandiere del mondo, completamente client-side, senza d
 - **160+ nazioni** nel database, nomi in italiano
 - **50 domande** estratte casualmente ad ogni partita
 - **3 livelli di difficoltà:**
+
   | Difficoltà | Opzioni | Layout | Moltiplicatore |
   |------------|---------|--------|----------------|
   | 🟢 Facile  | 4       | 1 col  | ×1             |
@@ -33,14 +47,14 @@ Il rating finale usa una formula che bilancia precisione e velocità:
 Rating = (Corrette² / 50) × Moltiplicatore × (1000 / Secondi) × 10
 ```
 
-Il quadrato delle risposte corrette penalizza molto gli errori, rendendo la precisione più importante della velocità pura.
+Il quadrato delle risposte corrette penalizza fortemente gli errori, rendendo la precisione più importante della velocità pura.
 
 ### Profili e Record
 - **Nome giocatore** richiesto prima di ogni partita
 - **Giocatori salvati**: i nomi precedenti sono selezionabili con un click
 - **Record assoluto** salvato in `localStorage` con nome, rating, difficoltà, tempo e data
 - Il record è visibile nella **home page** e nella **schermata risultati**
-- Banner animato dorato quando si batte il record
+- Banner animato dorato quando si batte il record 🏆
 
 ---
 
@@ -61,6 +75,10 @@ Il quadrato delle risposte corrette penalizza molto gli errori, rendendo la prec
 ```
 global-flag-challenge/
 ├── global-flag-challenge.html   # Tutta l'app in un singolo file
+├── screenshots/
+│   ├── home.png
+│   ├── game.png
+│   └── result.png
 └── README.md
 ```
 
@@ -72,7 +90,7 @@ Nessuna dipendenza, nessun build step, nessun framework.
 
 ### Localmente
 ```bash
-git clone https://github.com/TUO-USERNAME/global-flag-challenge.git
+git clone https://github.com/cicciocanestro/global-flag-challenge.git
 cd global-flag-challenge
 # Apri global-flag-challenge.html nel browser
 ```
@@ -80,7 +98,8 @@ cd global-flag-challenge
 ### GitHub Pages
 1. Vai su **Settings → Pages** nel repository
 2. Seleziona il branch `main` e la cartella `/ (root)`
-3. Salva — la pagina sarà disponibile su `https://TUO-USERNAME.github.io/global-flag-challenge/global-flag-challenge.html`
+3. Salva — la pagina sarà disponibile su:
+   `https://cicciocanestro.github.io/global-flag-challenge/global-flag-challenge.html`
 
 ---
 
@@ -97,14 +116,6 @@ cd global-flag-challenge
 
 ---
 
-## 📸 Screenshot
-
-| Splash / Home | Gioco | Risultati |
-|---|---|---|
-| Schermata iniziale con record e difficoltà | Card con bandiera e opzioni | Rating finale e confronto record |
-
----
-
 ## 📄 Licenza
 
 MIT — libero di usare, modificare e distribuire.
@@ -112,3 +123,4 @@ MIT — libero di usare, modificare e distribuire.
 ---
 
 *Fatto con ❤️ e un po' di geopolitica.*
+
